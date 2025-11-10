@@ -142,5 +142,23 @@ async def select_memo():
 # 메모 삭제 -> 조건식 필요-> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
 @app.delete("/memo/{memo_id}")
-async def select_memo():
-    pass
+async def delete_memo(memo_id : int, 
+                      db_conn : Session = Depends(get_connection)
+                     ):
+    # 1. 해당 ID에 일치하는(where ~ ) 데이터중 첫번째것 획득
+    # 모든 데이터를 하나씩 꺼내서 Memo 객체에 담고 -> 비교 
+    # -> 일치하는것만 모아서 -> 첫번째것만 추출
+    target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
+
+    # 2. 1번의 결과물이 없다면, 해당 메모는 없다(이미 삭제됨)는 메세지 처
+    if not target_memo:
+        return { "type":"error", "msg":"발견된 메모가 없습니다." }
+
+    # 3. 메모가 있다면 -> 삭제
+    db_conn.delete( target_memo ) # delete ~ 
+
+    # 4. 커밋
+    db_conn.commit()
+
+    # 5. 응답 -> 삭제 성공 메세지 전송
+    return { "type":"success", "msg":"메모가 삭제되었습니다." }
