@@ -136,8 +136,31 @@ async def select_memo(db_conn : Session = Depends(get_connection)):
 # 메모 수정 -> 조건식 필요 -> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
 @app.put("/memo/{memo_id}")
-async def select_memo():
-    pass
+async def select_memo(memo_id : int, memo : MemoUpdate, 
+                      db_conn : Session = Depends(get_connection)):
+    # 1. 수정하고자 하는 메모 획득 (id가 일치하는 모든 메모중 첫번째것 획득)
+    target_memo = db_conn.query(Memo).filter(Memo.id == memo_id).first()
+    if not target_memo:
+        return { "type":"error", "msg":"발견된 메모가 없습니다." }
+    
+    # 2. 수정하고자 하는 내용이 있는 컬럼만 대체 (수정된것만 보낼수 있음)
+    if memo.title:
+        target_memo.title = memo.title      # 제목 대체
+    if memo.content:
+        target_memo.content = memo.content  # 내용 대체        
+
+    # 3. 커밋
+    db_conn.commit()
+
+    # 4. 메모 갱신
+    db_conn.refresh( target_memo )
+
+    # 5. 응답 -> 바뀐 내용기반으로 메모 정보를 출력
+    return { "type":"success", "data":{
+        "id"        : target_memo.id,
+        "title"     : target_memo.title,
+        "content"   : target_memo.content
+    } }
 
 # 메모 삭제 -> 조건식 필요-> 메모를 특정할수 있는 (고유)값필요
 # 경로 매개변수를 통해서 메모 데이터의 고유한 ID를 전달 -> 일반적 디자인
