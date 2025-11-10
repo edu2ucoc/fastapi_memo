@@ -98,12 +98,30 @@ async def create_memo(memo : MemoInsert,
     - 출력
         - 결과 반환(필요시 정보 추가)
     '''
-    #### 처리 ####
-    # 메모 데이터를 이용하여 Memo 클레스기반 객체 1개 생성
+    #### 처리 ####    
+    # 사전 처리된 내용 기술
+    # 사용자 데이터 입력 -> 요청(데이터전송) -> pydantic MemoInsert의해
+    # -> 유효성검사 후 MemoInsert에 담김(객체 생성) 
+    
+    # 메모 데이터를 이용하여 Memo 클레스(DB에 연결된)기반 객체 1개 생성
+    # -> Memo 객체 생성(데이터 인자로 전달)
+    memo = Memo(title=memo.title, content=memo.content)
+
     # db_conn을 이용하여 데이터베이스에 추가
-    # db_conn을 이용하여 커밋처리
-    # db_conn을 이용하여 이용하여 새로고침 처리
-    pass
+    db_conn.add( memo ) # insert into ~ 
+
+    # db_conn을 이용하여 커밋(디비에 실제 반영됨)처리
+    db_conn.commit()
+
+    # db_conn을 이용하여 이용하여 새로고침 처리 -> id값을 획득하는 과정
+    db_conn.refresh( memo )
+
+    # 반환(출력) -> dict 구조로 디비에 저장된 내용(정보)를 반환 (컨셉)
+    return { 
+        "id"    : memo.id, 
+        "title" : memo.title,
+        "content" : memo.content
+    }
 
 # 메모 조회 -> 최대로 가봐야 페이지번호 -> get
 @app.get("/memo/")
