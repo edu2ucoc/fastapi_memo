@@ -5,6 +5,8 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from typing import Optional
 from sqlalchemy.orm import Session
+# 데이터를 담는 그릇의 역활 -> DTO 구성
+from pydantic import BaseModel
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -31,14 +33,14 @@ class Memo(BaseTableModel):
 # 사용자가 작성한 데이터를 본 객체에 담아서 -> .. -> 디비에 반영
 # MemoInsert => 데이터를 담는 그릇 => DTO(자바 진영의 표현)
 # DTO(Data Transfer Object, 데이터 전송 객체)란 프로세스 간에 데이터를 전달하는 객체
-class MemoInsert(BaseTableModel):
+class MemoInsert(BaseModel):
     title : str
     content : str
 
 # 메모 수정용 클레스
 # 테이블 구조상 Null 허용하게 구성되어 있으므로
 # Optional[str] 이용하여 결측(null or  None)도 가능 실제 값도 가능
-class MemoUpdate(BaseTableModel):
+class MemoUpdate(BaseModel):
     title : Optional[str]   = None
     content : Optional[str] = None
 
