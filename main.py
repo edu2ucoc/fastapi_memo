@@ -136,6 +136,11 @@ BaseTableModel.metadata.create_all(bind=engine)
 def home(req : Request):
     return { "title":"메모 서비스" }
 
+# 리뷰 or ~/login 페이지에서 회원 가입, 로그인 연동
+@app.get("/login/")
+def home(req : Request):
+    return templates.TemplateResponse("index.html", {"request":req})
+
 # Auth 관련 라우트
 # 회원가입 -> 사용자정보(비밀번호등) 때문에 post
 @app.post("/signup")
