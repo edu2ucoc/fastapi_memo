@@ -190,10 +190,10 @@
         {% for memo in memos %}
         <div class="card memo">
             <div class="card-body">               
-                <input type="text" id="title-{{ memo.id }}" value="{{ memo.title }}" class="form-control memo-title" readonly>
-                <textarea id="content-{{ memo.id }}" class="form-control memo-content" readonly>{{ memo.content }}</textarea>
+                <input type="text" id="title-{{ memo.id }}" value="{{ memo.title }}" class="form-control memo-title" readOnly>
+                <textarea id="content-{{ memo.id }}" class="form-control memo-content" readOnly>{{ memo.content }}</textarea>
                 <div class="edit-buttons">
-                    <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-edit" onclick="toggleEditUpdateMemo({{ memo.id }});"><i class="fas fa-edit"></i></button>
                     <button class="btn btn-delete" onclick="deleteMemo({{ memo.id }});"><i class="fas fa-trash-alt"></i></button>
                 </div>                  
             </div>
@@ -246,6 +246,22 @@
                 alert( data.msg1 )
                 window.location.reload(); // 목록이 줄어든것을 확인할수 있음
             })
+        }
+        function toggleEditUpdateMemo( memo_id ) {
+            console.log(memo_id, '편집 토글 + 메모 업데이트');
+            // 1. 요소 특정 -> input, textarea
+            let titleElement   = document.getElementById("title-"+memo_id);
+            let contentElement = document.getElementById("content-"+memo_id);
+            console.log( titleElement.readOnly );
+            let curIsEdit      = titleElement.readOnly; // 현재 편집모드
+            // 토글 처리
+            // T->F, F->T  바꿔줌
+            titleElement.readOnly   = !curIsEdit;
+            contentElement.readOnly = !curIsEdit;
+
+            if (curIsEdit) { // 편집 가능할때 편집 진행
+                
+            }
         }
     </script>
 </body>
