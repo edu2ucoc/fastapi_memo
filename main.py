@@ -192,4 +192,4 @@ async def delete_memo(memo_id : int,
     db_conn.commit()
 
     # 5. 응답 -> 삭제 성공 메세지 전송
-    return { "type":"success", "msg":"메모가 삭제되었습니다." }
+    return { "type":"success", "msg1":"메모가 삭제되었습니다." }
