@@ -8,6 +8,11 @@ from sqlalchemy.orm import Session
 # 데이터를 담는 그릇의 역활 -> DTO 구성
 from pydantic import BaseModel
 
+###############################
+#
+# 전역변수 : 앱, 템플릿, 정적폴더, ORM 설정
+#
+###############################
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static",StaticFiles(directory="static"),name="static")
@@ -19,6 +24,26 @@ DATABASE_URL = "mysql+pymysql://root:1234@127.0.0.1/memos"
 engine      = create_engine( DATABASE_URL )
 # 테이블 구성에 필요한 재료 준비 -> 모든 ORM 모델들이 상속받아야 할 클레스 구성
 BaseTableModel = declarative_base()
+
+# 테이블 구성 -> 고객 관련 마스터 테이블 클레스
+class User(BaseTableModel):
+    __tablename__ = "users"
+    id              = Column(Integer, primary_key=True, index=True)
+    username        = Column(String(128), unique=True, index=True)
+    email           = Column(String(256))
+    hashed_password = Column(String(512))
+
+# 회원가입시 데이터를 담을 그릇 -> DTO
+class UserInsert(BaseModel):
+    username    : str
+    email       : str
+    password    : str # 암호화 하기 전 비밀번호
+
+# 로그인 데이터를 담을 그릇 -> DTO
+class UserLogin(BaseModel):
+    username    : str
+    password    : str # 암호화 하기 전 비밀번호
+    pass
 
 # 테이블 구성 -> 메모 관련 마스터 테이블 클레스
 # BaseTableModel을 상속받음으로써 ORM 모델 되고->테이블 구성하게 됨 : 규칙
@@ -71,6 +96,16 @@ def get_connection():
 # BaseTableModel을 상속받은 모든 모델을 찾아라 
 # -> 데이터베이스와 연결 확인(연결 진행) -> 테이블 체크 -> 없으면 생성함.
 BaseTableModel.metadata.create_all(bind=engine)
+
+
+
+###############################
+#
+# 라우팅
+#
+###############################
+
+
 
 
 @app.get("/")
