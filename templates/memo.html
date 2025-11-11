@@ -194,7 +194,7 @@
                 <textarea id="content-{{ memo.id }}" class="form-control memo-content" readonly>{{ memo.content }}</textarea>
                 <div class="edit-buttons">
                     <button class="btn btn-edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-delete"><i class="fas fa-trash-alt"></i></button>
+                    <button class="btn btn-delete" onclick="deleteMemo({{ memo.id }});"><i class="fas fa-trash-alt"></i></button>
                 </div>                  
             </div>
         </div>
@@ -228,6 +228,19 @@
                 alert('메모가 등록 되었습니다.') // 알림창
                 // 현 페이지 새로고침
                 window.location.reload();
+            })
+        }
+        function deleteMemo( memo_id ) {
+            // 메모 id를 가져오는 방법 고민 혹은 적용
+            console.log(memo_id, '메모 삭제')
+            // 메모 삭제 URL 호출 -> 화면갱신
+            fetch("/memo/"+memo_id, {
+                method : "DELETE"
+            })
+            .then( res  => res.json() )
+            .then( data => {                
+                alert( data["msg"] )
+                window.location.reload(); // 목록이 줄어든것을 확인할수 있음
             })
         }
     </script>
