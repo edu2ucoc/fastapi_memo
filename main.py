@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 # 암호화 관련 모듈
 import bcrypt
+# 세션
+from starlette.middleware.sessions import SessionMiddleware
 
 ###############################
 #
@@ -18,6 +20,12 @@ import bcrypt
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 app.mount("/static",StaticFiles(directory="static"),name="static")
+app.add_middleware(
+    SessionMiddleware,
+    secret_key='wsldfjwefjo823rlkwefnlkefnles', # 추후 외부에서 관리
+    session_cookie='memo_session', # 세션 쿠키의 이름
+    max_age=1*60*60*24 # 현재는 1일 적용, 초단위
+)
 
 # ORM 작업 (전역 변수 위치)
 # 데이터베이스 연동 URL 구성 = 프로토콜://아이디:비밀번호@IP/데이터베이스명
@@ -150,13 +158,15 @@ async def signup(user : UserInsert,
 
 # 로그인 -> 사용자정보(비밀번호등) 때문에 post
 @app.post("/signin")
-async def signin(login_data : UserLogin, 
+async def signin(req        : Request,
+                 login_data : UserLogin, 
                     db_conn : Session = Depends(get_connection) ):
     # 1. 로그인 데이터중 고유한값 -> username 이 존재하는지 체크
     target_user = db_conn.query(User).filter(User.username == login_data.username).first()
     # 2. 해당 유저가 존재하고, 비밀번호가 해싱된 비밀번호와 대조시 일치하면
     if target_user and check_vaild_password(login_data.password, target_user.hashed_password):
         # 2-1. 둘다 참이면 => 고객 OK => 세션 생성
+        req.session["username"] = login_data.username
         # 2-2. 더미로 응답
         return { "msg":"로그인 성공" }
     return { "msg":"로그인 실패" }
@@ -164,7 +174,9 @@ async def signin(login_data : UserLogin,
 
 # 로그아웃 -> 반드시 JS로 처리한다 -> 브라우저 주소창에 넣어서 구동X
 @app.post("/logout")
-async def logout():
+async def logout(req : Request):
+    # 세션 제거
+    req.session.pop("username", None)
     pass
 
 
