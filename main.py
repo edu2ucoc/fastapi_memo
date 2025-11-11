@@ -134,13 +134,19 @@ def home(req : Request):
 async def signup(user : UserInsert, 
               db_conn : Session = Depends(get_connection) ):
     # 0. 비밀번호 암호화 (passlib 패키지 활용)
+    hashed_password = get_hashed_password( user.password )
     # 1. ORM을 통해 데이터베이스에 데이터 입력 
     # 1-1. User 객체 생성되어야함 (사용자명, 이메일, 암호화된비밀번호)
+    new_user = User(username=user.username, 
+                       email=user.email, hashed_password=hashed_password)
     # 1-2. add()
+    db_conn.add( new_user )
     # 1-3. commit()
+    db_conn.commit()
     # 1-4. refresh()
-    # 2. 응답
-    pass
+    db_conn.refresh( new_user ) # id등 등록된 내용으로 새로고침
+    # 2. 응답 -> dict 형태 => {"msg":"가입 완료", "user_id":아이디값 }
+    return {"msg":"가입 완료", "user_id":new_user.id }
 
 # 로그인 -> 사용자정보(비밀번호등) 때문에 post
 @app.post("/signin")
