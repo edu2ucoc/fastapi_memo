@@ -172,6 +172,53 @@
 
             return false;
         }
+    
+        // 로그인 처리 함수
+        function submitLoginForm(evt) {
+            evt.preventDefault();
+            console.log("로그인 처리");
+            // 1. 로그인시 전달할 데이터 구성 => { .. } => JSON 문자열 => 서버측 => UserLogin 객체
+            const param = {
+                username    : document.getElementById("username").value,                
+                password    : document.getElementById("password").value
+            };
+            console.log( param );
+            // 2. 로그인 실제 통신 (요청) -> 응답 -> 화면 처리
+            fetch("/signin/",{
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify( param )
+            })
+            .then( res    =>{ 
+                console.log( res ); // 통신후 최초로 받은 응답 내용
+                return res
+                       .json()                
+                       .then( resJson => ({ code:res.status, body:resJson }) ) 
+            })
+            .then( result => {
+                console.log( "최종 화면 처리 ", result )
+                if (result.code === 200) { // 응답코드 확인 가능해짐
+                    if (result.body.status_code === 401) {
+                        alert(result.body.detail);
+                        // 현재 페이지 새로고침!!
+                    }else{
+                        console.log( "로그인 성공", result.body );
+                        alert("로그인 성공");
+                        document.location.href = "/memo/"; // 향후 브런치 통합후 구성 
+                    }                       
+                }else{                    
+                    throw new Error("로그인 실패");
+                }                
+            })
+            .catch( err => { 
+                console.log("로그인 실패", err);
+                alert(err.message); 
+            })
+
+            return false;
+        }
     </script>
 </body>
 </html>
